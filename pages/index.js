@@ -18,7 +18,7 @@ export async function getStaticProps() {
   const data = JSON.parse(jsonData);
   return {
     props: {
-      products: data.productsDict,
+      products: data.productsObject,
     },
   };
 }
