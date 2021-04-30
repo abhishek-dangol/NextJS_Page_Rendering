@@ -1,31 +1,52 @@
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 
-function LastSalesPage() {
-  const [sales, setSales] = useState();
-  const [isLoading, setIsLoading] = useState(false);
+function LastSalesPage(props) {
+  const [sales, setSales] = useState(props.sales);
+  //   const [isLoading, setIsLoading] = useState(false);
+  const { data, error } = useSWR(
+    "https://max-nextjs-test-default-rtdb.firebaseio.com/sales.json"
+  );
+
   useEffect(() => {
-    setIsLoading(true);
-    fetch("https://max-nextjs-test-default-rtdb.firebaseio.com/sales.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const transformedSales = [];
-        for (const key in data) {
-          transformedSales.push({
-            id: key,
-            username: data[key].username,
-            volume: data[key].volume,
-          });
-        }
-        setSales(transformedSales);
-        setIsLoading(false);
-      });
-  }, []);
-  if (isLoading) {
+    if (data) {
+      const transformedSales = [];
+      for (const key in data) {
+        transformedSales.push({
+          id: key,
+          username: data[key].username,
+          volume: data[key].volume,
+        });
+      }
+      setSales(transformedSales);
+    }
+  }, [data]);
+
+  //   useEffect(() => {
+  //     setIsLoading(true);
+  //     fetch("https://max-nextjs-test-default-rtdb.firebaseio.com/sales.json")
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         const transformedSales = [];
+  //         for (const key in data) {
+  //           transformedSales.push({
+  //             id: key,
+  //             username: data[key].username,
+  //             volume: data[key].volume,
+  //           });
+  //         }
+  //         setSales(transformedSales);
+  //         setIsLoading(false);
+  //       });
+  //   }, []);
+  if (error) {
+    return <p>Failed to load</p>;
+  }
+
+  if (!data && !sales) {
     return <p>Loading...</p>;
   }
-  if (!sales) {
-    return <p>No data yet</p>;
-  }
+
   return (
     <ul>
       {sales.map((sale) => (
@@ -35,6 +56,23 @@ function LastSalesPage() {
       ))}
     </ul>
   );
+}
+
+export async function getStatiProps() {
+  const response = await fetch(
+    "https://max-nextjs-test-default-rtdb.firebaseio.com/sales.json"
+  );
+  const data = await response.json();
+
+  const transformedSales = [];
+  for (const key in data) {
+    transformedSales.push({
+      id: key,
+      username: data[key].username,
+      volume: data[key].volume,
+    });
+  }
+  return { props: { sales: transformedSales }, revalidate: 10 };
 }
 
 export default LastSalesPage;
