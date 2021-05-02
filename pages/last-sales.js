@@ -44,7 +44,7 @@ function LastSalesPage(props) {
   }
 
   if (!data && !sales) {
-    return <p>Loading...</p>;
+    return <p>Loading....</p>;
   }
 
   return (
